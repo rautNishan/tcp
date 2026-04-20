@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"syscall"
+	"unsafe"
 
 	"golang.org/x/sys/unix"
 )
@@ -27,12 +29,29 @@ func Open() (int, error) {
 }
 
 // Doc: https://man7.org/linux/man-pages/man2/ioctl.2.html
+
 func SetImmediate(fd int) error {
 	val := 1
 	//Why unsafe.Pointer => Because Go’s type system normally prevents mixing pointer types, but syscalls require raw memory pointers (like C’s char *argp) (ioctl)
 	// More on unsafe.Pointer Doc: https://alexanderobregon.substack.com/p/unsafe-pointer-conversions-in-go
 	if err := unix.IoctlSetInt(fd, unix.BIOCIMMEDIATE, val); err != nil { //unsafe.Pointer internally used (https://github.com/seccome/Ehoney/blob/3712e644d326466a7d64b1dec937064c6f7db8d7/tool/go/src/runtime/sys_openbsd3.go#L4)
 		return fmt.Errorf("BIOCIMMEDIATE failed: %w", err)
+	}
+	return nil
+}
+
+func BindInterface(fd int, iface string) error {
+	var req ifreq
+	copy(req.Name[:], iface)
+
+	_, _, errno := unix.Syscall(
+		syscall.SYS_IOCTL,
+		uintptr(fd),
+		uintptr(unix.BIOCSETIF),
+		uintptr(unsafe.Pointer(&req)),
+	)
+	if errno != 0 {
+		return fmt.Errorf("BIOCSETIF failed: %w", errno)
 	}
 	return nil
 }
