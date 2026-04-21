@@ -55,3 +55,12 @@ func BindInterface(fd int, iface string) error {
 	}
 	return nil
 }
+
+func GetBuffLen(fd int) (int, error) {
+	var size uint32
+	_, _, err := unix.Syscall(syscall.SYS_IOCTL, uintptr(fd), uintptr(unix.BIOCGBLEN), uintptr(unsafe.Pointer(&size)))
+	if err != 0 {
+		return 0, fmt.Errorf("BIOCGBLEN failed: %v", err)
+	}
+	return int(size), nil
+}

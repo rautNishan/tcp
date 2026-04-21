@@ -18,9 +18,33 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Error: ", err)
 		os.Exit(1)
 	}
-	fmt.Println("This is bfp fd: ", fd)
 	// _ = readFD(fd)
 
+	if err := setImmediate(fd); err != nil {
+		fmt.Fprintln(os.Stderr, "Error: ", err)
+		os.Exit(1)
+	}
+	if err := BindInterface(fd, iface); err != nil {
+		fmt.Fprintln(os.Stderr, "Error: ", err)
+		os.Exit(1)
+	}
+	// _ = readFD(fd) //in this point we can see raw network packet bytes
+	buffLen, err := GetBuffLen(fd)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error: ", err)
+		os.Exit(1)
+	}
+
+	buffer := make([]byte, buffLen)
+
+	for {
+		n, err := unix.Read(fd, buffer)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error: ", err)
+			break
+		}
+		fmt.Println("Read: ", n)
+	}
 }
 
 // Just seeing what is inside this fd.
@@ -35,6 +59,9 @@ func readFD(fd int) error {
 		// (//https://docs.oracle.com/cd/E36784_01/html/E36884/bpf-7d.html)
 		return err
 	}
-	fmt.Println(string(buf[:n]))
+	for i := 0; i < n; i++ {
+		fmt.Printf("%02x ", buf[i])
+	}
+	fmt.Println()
 	return nil
 }
