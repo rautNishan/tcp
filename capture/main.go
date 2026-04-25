@@ -48,20 +48,20 @@ func main() {
 }
 
 // Just seeing what is inside this fd.
-func readFD(fd int) error {
-	buf := make([]byte, 4096)
-	n, err := unix.Read(fd, buf)
-	if err != nil {
-		fmt.Println("Error: ", err) //(Error:  device not configured) This is the erro we will get
-		// because  the BPF device is opened but never
-		// bound it to a network interface.
-		// A BPF fd must be attached to an interface before it can capture packets.
-		// (//https://docs.oracle.com/cd/E36784_01/html/E36884/bpf-7d.html)
-		return err
-	}
-	for i := 0; i < n; i++ {
-		fmt.Printf("%02x ", buf[i])
-	}
-	fmt.Println()
-	return nil
-}
+// func readFD(fd int) error {
+// 	buf := make([]byte, 4096)
+// 	n, err := unix.Read(fd, buf)
+// 	if err != nil {
+// 		fmt.Println("Error: ", err) //(Error:  device not configured) This is the erro we will get
+// 		// because  the BPF device is opened but never
+// 		// bound it to a network interface.
+// 		// A BPF fd must be attached to an interface before it can capture packets.
+// 		// (//https://docs.oracle.com/cd/E36784_01/html/E36884/bpf-7d.html)
+// 		return err
+// 	}
+// 	for i := 0; i < n; i++ {
+// 		fmt.Printf("%02x ", buf[i])
+// 	}
+// 	fmt.Println()
+// 	return nil
+// }
